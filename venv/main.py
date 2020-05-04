@@ -20,7 +20,6 @@ rRow = 0;
 rCol = 0;
 rooms[rRow][rCol].fillRoom(screen, robotImage, rX, rY)
 
-#main.py
 #tells us which room to go to next (if that room exist)
 def changeRoom(currentRow, currentCol):
     #go to room on the right
@@ -60,7 +59,6 @@ while running:
     elif keys[pygame.K_DOWN]:
         rY = rY + speed
 
-    #main.py
     #keep track of the old row and column values
     #(this will help us if we need to flip the robot
     prevRow, prevCol = rRow, rCol
