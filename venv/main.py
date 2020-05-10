@@ -1,6 +1,8 @@
 import pygame
 import sys
 from Classes import Room
+from Classes import Robot
+from Classes import SLAM
 
 screen = pygame.display.set_mode((800, 800))
 running = True
@@ -20,23 +22,9 @@ rRow = 0;
 rCol = 0;
 rooms[rRow][rCol].fillRoom(screen, robotImage, rX, rY)
 
-#tells us which room to go to next (if that room exist)
-def changeRoom(currentRow, currentCol):
-    #go to room on the right
-    if rX > 750 and currentCol + 1 < 4:
-        currentCol = currentCol + 1
-    #go to room on the left
-    elif rX < 0 and currentCol - 1 > -1:
-        currentCol = currentCol - 1
-    #go to room below
-    elif rY > 750 and currentRow + 1 < 4:
-        currentRow = currentRow + 1
-    #go to room above
-    elif rY < 0 and currentRow - 1 > -1:
-        currentRow = currentRow - 1
+currentRoom = rooms[rRow][rCol]
 
-    return currentRow, currentCol
-
+sensors = (400, 336, 736, 0)
 
 while running:
     # pause the program for 5 miliseconds so that it doesn't run to fast
@@ -48,15 +36,19 @@ while running:
     # get the keys that are currently pressed
     keys = pygame.key.get_pressed()
 
-    # if the up, down, left, or right keys are pressed
-    # we want to change the position accordingly
-    if keys[pygame.K_LEFT]:
+    moonRect = pygame.Rect((currentRoom.moonWidth, currentRoom.moonHeight), (128, 128))
+
+    if keys[pygame.K_LEFT] and pygame.Rect((rX - speed, rY), (64, 64)).colliderect(moonRect) == 0 \
+            and (sensors[3] - speed > 0 or rCol - 1 > -1):
         rX = rX - speed
-    elif keys[pygame.K_RIGHT]:
+    elif keys[pygame.K_RIGHT] and pygame.Rect((rX + speed, rY), (64, 64)).colliderect(moonRect) == 0 \
+            and (sensors[2] > speed or rCol + 1 < 4):
         rX = rX + speed
-    elif keys[pygame.K_UP]:
+    elif keys[pygame.K_UP] and pygame.Rect((rX, rY - speed), (64, 64)).colliderect(moonRect) == 0 \
+            and (sensors[0] - speed > 0 or rRow - 1 > -1):
         rY = rY - speed
-    elif keys[pygame.K_DOWN]:
+    elif keys[pygame.K_DOWN] and pygame.Rect((rX, rY + speed), (64, 64)).colliderect(moonRect) == 0 \
+            and (sensors[1] > speed or rRow + 1 < 4):
         rY = rY + speed
 
     #keep track of the old row and column values
@@ -64,7 +56,8 @@ while running:
     prevRow, prevCol = rRow, rCol
 
     #get the new row and column values
-    rRow, rCol = changeRoom(rRow, rCol)
+    rRow, rCol = currentRoom.changeRoom(rRow, rCol, rX, rY)
+    currentRoom = rooms[rRow][rCol]
 
     #flip the robot on its X-axis
     #(for example if our robot moves to the right
@@ -77,6 +70,16 @@ while running:
 
     # call the fillRoom function to add the robot to the screen
     rooms[rRow][rCol].fillRoom(screen, robotImage, rX, rY)
+
+    #call the sensor data
+    mX = rooms[rRow][rCol].moonWidth
+    mY = rooms[rRow][rCol].moonHeight
+    sensors = Robot.Robot().getSensorData(rX, rY, mX, mY)
+
+    sensors, positions = SLAM.addErrors(sensors, rX, rY)
+
+    print(sensors)
+
     # update the screen
     pygame.display.update()
 
