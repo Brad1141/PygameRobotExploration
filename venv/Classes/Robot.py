@@ -35,6 +35,6 @@ class Robot:
         else:
             wDistance = rX
 
-        sensors = [nDistance, sDistance, eDistance, wDistance]
+        sensors = [eDistance, nDistance, wDistance, sDistance]
         return sensors
 

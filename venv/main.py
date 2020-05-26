@@ -3,6 +3,7 @@ import sys
 from Classes import Room
 from Classes import Robot
 from Classes import SLAM
+from Classes import DataPrep
 
 screen = pygame.display.set_mode((800, 800))
 running = True
@@ -24,7 +25,7 @@ rooms[rRow][rCol].fillRoom(screen, robotImage, rX, rY)
 
 currentRoom = rooms[rRow][rCol]
 
-sensors = (400, 336, 736, 0)
+sensors = (736, 400, 0, 336)
 
 while running:
     # pause the program for 5 miliseconds so that it doesn't run to fast
@@ -39,16 +40,16 @@ while running:
     moonRect = pygame.Rect((currentRoom.moonWidth, currentRoom.moonHeight), (128, 128))
 
     if keys[pygame.K_LEFT] and pygame.Rect((rX - speed, rY), (64, 64)).colliderect(moonRect) == 0 \
-            and (sensors[3] - speed > 0 or rCol - 1 > -1):
+            and (sensors[2] - speed > 0 or rCol - 1 > -1):
         rX = rX - speed
     elif keys[pygame.K_RIGHT] and pygame.Rect((rX + speed, rY), (64, 64)).colliderect(moonRect) == 0 \
-            and (sensors[2] > speed or rCol + 1 < 4):
+            and (sensors[0] > speed or rCol + 1 < 4):
         rX = rX + speed
     elif keys[pygame.K_UP] and pygame.Rect((rX, rY - speed), (64, 64)).colliderect(moonRect) == 0 \
-            and (sensors[0] - speed > 0 or rRow - 1 > -1):
+            and (sensors[1] - speed > 0 or rRow - 1 > -1):
         rY = rY - speed
     elif keys[pygame.K_DOWN] and pygame.Rect((rX, rY + speed), (64, 64)).colliderect(moonRect) == 0 \
-            and (sensors[1] > speed or rRow + 1 < 4):
+            and (sensors[3] > speed or rRow + 1 < 4):
         rY = rY + speed
 
     #keep track of the old row and column values
@@ -76,11 +77,16 @@ while running:
     mY = rooms[rRow][rCol].moonHeight
     sensors = Robot.Robot().getSensorData(rX, rY, mX, mY)
 
-    sensors, positions = SLAM.addErrors(sensors, rX, rY)
+    sensors, positions = DataPrep.addErrors(sensors, rX, rY)
 
-    print(sensors)
+    positions = [rX, rY]
+
+    #SLAM!
+    roomCoord = [rRow, rCol]
+    SLAM.demoSlam(sensors, positions, screen, roomCoord)
 
     # update the screen
     pygame.display.update()
 
-
+#print out the graph
+DataPrep.printCoords()
