@@ -1,4 +1,5 @@
 # PRE (Pygame Robot Exploration)
+.
 <img src="part1_superLarge.jpg" width="400" height="400">
 <img src="MoreDetailedMap.png" width="400" height="400">
 
