@@ -8,7 +8,7 @@ PRE is a python game designed to help developers learn how to write SLAM and oth
 
 There are several ways that PRE makes writing SLAM easier
 
-1. All of the information you need is provided up front. Simply call the getSensorData() function and PRE will simulate the effect of having sensors on your robot
+1. All of the information you need is provided up front. For example, simply call the getSensorData() function and PRE will simulate the effect of having sensors on your robot
 
 2. PRE comes with built in functions to help write a SLAM algorithm, this includes adding noise to your data as well as displaying your map using matpotlib
 
