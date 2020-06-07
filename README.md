@@ -25,4 +25,6 @@ There are several ways that PRE makes writing SLAM easier
 * Pygame
 ```pip install pygame```
 
+## More info
+This project was originally part of a tutorial I made on how to make a simple game for robotic mapping. Feel free to check out the [tutorial series](https://roving-robots.com/2020/05/04/python-game-for-robot-exploration-part-1/) for more details on the methods and features used in PRE. 
 
