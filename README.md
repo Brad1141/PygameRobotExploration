@@ -15,7 +15,14 @@ There are several ways that PRE makes writing SLAM easier
 3. PRE comes with a build in SLAM algorithm so you don't have to start from scratch. If you get stuck on a certain part of SLAM you can always check the default to help you.
 
 ## Installing/Running PRE
-1. [Install git on your computer](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+1. Install the dependencies listed below
 2. run the command ```git clone https://github.com/Brad1141/PygameRobotExploration.git```
 3. open the repo and run the file```main.py``` located in the ```/venv``` folder
+
+## Dependencies
+* Matplotlib
+```pip install matplotlib```
+* Pygame
+```pip install pygame```
+
 
