@@ -1,5 +1,4 @@
 import pygame
-import sys
 from Classes import Room
 from Classes import Robot
 from Classes import SLAM

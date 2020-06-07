@@ -2,7 +2,6 @@ import random
 import math
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.optimize import curve_fit
 from Classes import DataPrep
 import pygame
 from time import sleep
@@ -23,6 +22,7 @@ def expGraph(x, m, b):
 def demoSlam(sensors, position, screen, roomCoord):
     #run the SLAM stack
     spikes(sensors, position)
+    #DataPrep.addCoords(sensors, position)
     dataAssociation(sensors, position, screen, currentLandmarks)
     EKF(currentLandmarks, position, sensors, screen, roomCoord)
 
@@ -31,6 +31,7 @@ def spikes(sensors, position):
     global prevSensorData
 
     for i in range(4):
+        #if there is an abrupt change of 128 or more pixels then consider that point a landmark
         if abs(prevSensorData[i] - sensors[i]) > 128:
             if i == 0:
                 shortDistance = prevSensorData[i] if prevSensorData[i] < sensors[i] else sensors[i]
@@ -61,6 +62,7 @@ def dataAssociation(sensors, position, screen, lms):
                 if dist < min:
                     min = dist
                     minLandmark = l
+            #validation gate
             if min < ( 2 * 800 * (percentError/100)):
                 #add the two together in the "pairs" list
                 pairs.append([i, minLandmark])
@@ -80,22 +82,27 @@ def EKF(lms, position, sensors, screen, room):
         X = [currentStateEst[0], currentStateEst[1], 0]
 
         # The covariance matrix
-        P = []
+        P = np.array([])
         lmAngle = i[0].angle
-        sensorBasedPos = []
         global prevSensorData
         global prevPos
+        pairs[0] = [i[0].x, i[0].y]
 
         #find the robot's position based on the sensor data
         sensorBasedPos = DataPrep.getSensorBasedPos(sensors, prevSensorData, i[0], lmAngle)
 
         #covariance of robot state
-        i_0 = [i[0].x, i[0].y, i[0].angle]
-        i_1 = [i[1].x, i[1].y, i[1].angle]
-        P.append(np.cov(currentStateEst, sensorBasedPos))
-        P = np.array(P).reshape(2, 2)
-        P = np.append(P, [[0], [0]], axis=1)
-        P = np.append(P, [[0, 0, 0]], axis=0)
+        P_A = [[float(np.cov([currentStateEst[i], sensorBasedPos[j]])) for j in range(3)] for i in range(3)]
+        P_E = [[float(np.cov([currentStateEst[i], pairs[0][j]])) for j in range(2)] for i in range(3)]
+        P_D = [[float(np.cov([pairs[0][i], currentStateEst[j]])) for j in range(3)] for i in range(2)]
+        P_B = [[float(np.cov([pairs[0][i], pairs[0][j]])) for j in range(2)] for i in range(2)]
+
+        P = np.append(P, P_A)
+        P = np.append(P, P_E)
+        P = np.append(P, P_D)
+        P = np.append(P, P_B)
+
+        P = np.resize(P, (5, 5))
 
         #Jacobian Matrix
         H = []
@@ -107,6 +114,8 @@ def EKF(lms, position, sensors, screen, room):
         H.append(-1)
         H = np.array(H)
         H = np.resize(H, (2, 3))
+        H = np.append(H, np.vstack([abs(i[0].x - i[1].x), 0]), axis=1)
+        H = np.append(H, np.vstack([abs(i[0].y - i[0].y), 0]), axis=1)
 
         #Jacobian of the predictor model
         A = []
@@ -139,12 +148,21 @@ def EKF(lms, position, sensors, screen, room):
         V = np.asmatrix(V)
         R = np.asmatrix(R)
         X = np.asmatrix(X)
-        K = P * H.T * np.asmatrix(H * P * H.T + V * R * V.T).I
 
-        K = np.array(K).reshape(3, 2)
+        try:
+            K = P * H.T * np.asmatrix(H * P * H.T + V * R * V.T).I
+        except:
+            K = np.zeros((5, 2))
 
-        currentStateEst[0] = prevPos[0] + K[0][1] * (sensorBasedPos[0] - prevPos[0])
-        currentStateEst[1] = prevPos[1] + K[1][1] * (sensorBasedPos[1] - prevPos[1])
+        K = np.array(K).reshape(5, 2)
+
+        #calculate robot position
+        currentStateEst[0] = prevPos[0] + K[0][0] * (sensorBasedPos[0] - prevPos[0])
+        currentStateEst[1] = prevPos[1] + K[1][0] * (sensorBasedPos[1] - prevPos[1])
+
+        #calculate landmark position
+        i[0].x = i[1].x + K[3][0] * (i[0].x - i[1].x)
+        i[0].y = i[1].y + K[3][0] * (i[0].y - i[1].y)
 
         #add the newly found coordinates to an array, adjust values according to room position
         #for example the coordinate (400, 400) in room[0][0] turns into (400, 2800)

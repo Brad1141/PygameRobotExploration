@@ -46,9 +46,7 @@ def addErrors(sensors, rX, rY):
 def setPercentError(self, newError):
     percentError = newError
 
-
 def printCoords():
-
     #gray is robot, blue is landmark
     plt.scatter(SlamPosX, SlamPosY, s=(np.pi * 20), c=(0, 0, 0), alpha=0.5)
     plt.scatter(SlamLX, SlamLY, s=(np.pi * 20))
