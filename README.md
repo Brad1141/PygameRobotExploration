@@ -1,7 +1,5 @@
 # PRE (Pygame Robot Exploration)
-.
-<img src="part1_superLarge.jpg" width="400" height="400">
-<img src="MoreDetailedMap.png" width="400" height="400">
+<img src="part1_superLarge.jpg" width="400" height="400"> <img src="MoreDetailedMap.png" width="400" height="400">
 
 ## What is PRE?
 PRE is a python game designed to help developers learn how to write SLAM and other algorithms that are related to robotic mapping/exploration
